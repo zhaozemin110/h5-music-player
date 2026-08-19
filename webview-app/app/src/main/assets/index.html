@@ -320,9 +320,10 @@ body{
       <div class="drop-zone" id="dropZone">
         <span class="dz-icon">&#128228;</span>
         <span>拖拽音乐文件到这里，或点击下方选择</span>
-        <span class="dz-btn" id="chooseBtn">选择文件</span>
+        <label class="dz-btn" for="fileInput" id="chooseBtn">选择文件</label>
       </div>
-      <input type="file" id="fileInput" multiple accept="audio/*">
+      <input type="file" id="fileInput" multiple accept="audio/mp3,audio/mpeg,audio/wav,audio/ogg,*/*"
+             style="width:100%;min-height:44px;margin-top:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:12px;color:#fff;font-size:14px;cursor:pointer;-webkit-appearance:none;appearance:none">
     </div>
   </div>
 
@@ -749,11 +750,26 @@ async function doSearch() {
 }
 
 function esc(s) { return (s==null?"":String(s)).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;"); }
+function dlog(msg) { try { console.log("[文件] " + msg); } catch(e) {} }
+function toastFile(msg) {
+  let el = $("fileToast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "fileToast";
+    el.style.cssText = "position:fixed;top:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#6ee7b7;padding:10px 18px;border-radius:10px;font-size:13px;z-index:9999;pointer-events:none;white-space:nowrap;transition:opacity .4s";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = "1";
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.opacity = "0"; }, 2200);
+}
 
 // --- 本地文件 ---
 const dropZone = $("dropZone"), fileInput = $("fileInput");
-$("chooseBtn").onclick = () => fileInput.click();
-dropZone.onclick = () => fileInput.click();
+function _pick() { try { fileInput.click(); toastFile("点击已触发 ▶ 选文件"); dlog("clicked"); } catch(e) { toastFile("点击触发失败:" + e.message); } }
+$("chooseBtn").onclick = _pick;
+dropZone.onclick = _pick;
 dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag"); });
 dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag"));
 dropZone.addEventListener("drop", e => { e.preventDefault(); dropZone.classList.remove("drag"); handleFiles(e.dataTransfer.files); });
