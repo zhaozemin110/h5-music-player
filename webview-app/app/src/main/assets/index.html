@@ -771,22 +771,37 @@ function toastFile(msg) {
 
 // --- 本地文件 ---
 const dropZone = $("dropZone"), fileInput = $("fileInput");
-function _pick() { try { fileInput.click(); toastFile("点击已触发 ▶ 选文件"); dlog("clicked"); } catch(e) { toastFile("点击触发失败:" + e.message); } }
+function diag(s) {
+  var d = $("diag");
+  if (d) { d.textContent = "[" + new Date().toTimeString().slice(0,8) + "] " + s; }
+}
+function _pick() {
+  diag("点击了「选择文件」");
+  try { fileInput.click(); diag("已调用 fileInput.click() ▶ 选文件"); }
+  catch(e) { diag("click()异常:" + e.message); toastFile("点击触发失败:" + e.message); }
+}
 $("chooseBtn").onclick = _pick;
 dropZone.onclick = _pick;
-dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag"); });
+dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag"); diag("拖入"); });
 dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag"));
-dropZone.addEventListener("drop", e => { e.preventDefault(); dropZone.classList.remove("drag"); handleFiles(e.dataTransfer.files); });
-fileInput.addEventListener("change", () => handleFiles(fileInput.files));
+dropZone.addEventListener("drop", e => { e.preventDefault(); dropZone.classList.remove("drag"); diag("放下:"+e.dataTransfer.files.length+"个文件"); handleFiles(e.dataTransfer.files); });
+fileInput.addEventListener("change", function() {
+  diag("change触发, files=" + fileInput.files.length);
+  if (fileInput.files.length > 0) toastFile("已选 " + fileInput.files.length + " 个文件 ▶");
+  handleFiles(fileInput.files);
+  fileInput.value = "";
+});
 function handleFiles(files) {
-  let n = 0;
+  let n = 0, skip = 0;
   for (const f of files) {
-    if (!f.type.startsWith("audio/")) continue;
+    if (!f.type.startsWith("audio/")) { skip++; continue; }
     const song = { title: f.name.replace(/\.[^.]+$/,""), artist: "本地", src: URL.createObjectURL(f), cover: "", _historyKind: "local" };
     playlist.push(song);
     addHistory(song);
     n++;
   }
+  diag("本地:" + n + "首进播放列表" + (skip ? ", 跳过"+skip+"个非音频" : ""));
+  if (n) toastFile("✅ 本地 " + n + " 首" + (skip ? ", 跳过"+skip : ""));
   if (n && audio.paused) setSong(playlist.length - n);
 }
 
