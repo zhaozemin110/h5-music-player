@@ -1,0 +1,37 @@
+# 构建产物
+*/build/
+*/.gradle/
+gradle-wrapper.jar
+*.dex
+*.class
+*.jar
+*.arsc
+output-metadata.json
+mapping.txt
+*.txt  # 仅用于构建报告; 真正的说明文件用 ! 排除
+
+# APK / Android 输出
+*.apk
+*.aab
+*.apkm
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# 本地配置
+local.properties
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 密钥
+*.jks
+*.keystore
+
+# 临时
+/tmp/
+node_modules/
